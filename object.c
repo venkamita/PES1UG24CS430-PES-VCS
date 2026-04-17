@@ -123,7 +123,49 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
         return 0;  // Already stored
     }
 
-    // (rest will be in next commit — for now just free and return -1)
+        // Step 6: Create shard directory
+    char path[512];
+    object_path(id_out, path, sizeof(path));
+
+    // Extract shard dir (e.g., ".pes/objects/2f")
+    char shard_dir[512];
+    char hex[HASH_HEX_SIZE + 1];
+    hash_to_hex(id_out, hex);
+    snprintf(shard_dir, sizeof(shard_dir), "%s/%.2s", OBJECTS_DIR, hex);
+    mkdir(shard_dir, 0755);
+
+    // Step 7: Write to temp file
+    char tmp_path[520];
+    snprintf(tmp_path, sizeof(tmp_path), "%s/tmp_XXXXXX", shard_dir);
+    int fd = open(tmp_path, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    if (fd < 0) { free(full_object); return -1; }
+
+    if (write(fd, full_object, total_len) != (ssize_t)total_len) {
+        close(fd);
+        unlink(tmp_path);
+        free(full_object);
+        return -1;
+    }
+
+    // Step 8: fsync + rename (atomic write)
+    fsync(fd);
+    close(fd);
+    free(full_object);
+
+    if (rename(tmp_path, path) != 0) {
+        unlink(tmp_path);
+        return -1;
+    }
+
+    // Step 9: fsync the directory
+    int dir_fd = open(shard_dir, O_RDONLY);
+    if (dir_fd >= 0) {
+        fsync(dir_fd);
+        close(dir_fd);
+    }
+
+    return 0;
+
     free(full_object);
     return -1;
 }
