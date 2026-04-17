@@ -213,6 +213,9 @@ int commit_create(const char *message, ObjectID *commit_id_out) {
     // Step 3: Set author and timestamp
     snprintf(c.author, sizeof(c.author), "%s", pes_author());
     c.timestamp = (uint64_t)time(NULL);
+    
+// Step 4: Set message
+    snprintf(c.message, sizeof(c.message), "%s", message);
 
     (void)message; (void)commit_id_out;
     return -1;
