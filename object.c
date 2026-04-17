@@ -234,7 +234,16 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
         return -1;
     }
 
+	// Step 6: Extract data portion (after the \0)
+    size_t header_size = (null_sep - buf) + 1;  // includes the \0
+    size_t data_len = file_size - header_size;
+    *data_out = malloc(data_len + 1);  // +1 for safety null-termination
+    if (!*data_out) { free(buf); return -1; }
+    memcpy(*data_out, null_sep + 1, data_len);
+    ((char *)*data_out)[data_len] = '\0';  // null-terminate for text objects
+    *len_out = data_len;
     free(buf);
-    return -1;
+    return 0;
+}
 }
 
