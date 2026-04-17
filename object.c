@@ -194,7 +194,39 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 // The caller is responsible for calling free(*data_out).
 // Returns 0 on success, -1 on error (file not found, corrupt, etc.).
 int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_t *len_out) {
-    // TODO: Implement
-    (void)id; (void)type_out; (void)data_out; (void)len_out;
+    // Step 1: Build path
+    char path[512];
+    object_path(id, path, sizeof(path));
+
+    // Step 2: Open and read file
+    FILE *f = fopen(path, "rb");
+    if (!f) return -1;
+
+    fseek(f, 0, SEEK_END);
+    long file_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    uint8_t *buf = malloc(file_size);
+    if (!buf) { fclose(f); return -1; }
+    if (fread(buf, 1, file_size, f) != (size_t)file_size) {
+        free(buf);
+        fclose(f);
+        return -1;
+    }
+    fclose(f);
+
+    // Step 3: Find the \0 separator between header and data
+    uint8_t *null_sep = memchr(buf, '\0', file_size);
+    if (!null_sep) { free(buf); return -1; }
+
+    // Step 4: Parse header for type
+    if (strncmp((char *)buf, "blob ", 5) == 0) *type_out = OBJ_BLOB;
+    else if (strncmp((char *)buf, "tree ", 5) == 0) *type_out = OBJ_TREE;
+    else if (strncmp((char *)buf, "commit ", 7) == 0) *type_out = OBJ_COMMIT;
+    else { free(buf); return -1; }
+
+    
+    free(buf);
     return -1;
 }
+
