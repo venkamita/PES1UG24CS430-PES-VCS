@@ -4,6 +4,13 @@
 
 **Platform:** Ubuntu 22.04
 
+## Student Details
+
+| Field | Details |
+|-------|---------|
+| **Name** | Sharat Doddihal |
+| **SRN** | PES1UG24CS430 |
+
 ---
 
 ## Getting Started
@@ -376,7 +383,11 @@ The test program verifies:
 
 **📸 Screenshot 1A:** Output of `./test_objects` showing all tests passing.
 
+![Screenshot 1A](screenshots/1A.png)
+
 **📸 Screenshot 1B:** `find .pes/objects -type f` showing the sharded directory structure.
+
+![Screenshot 1B](screenshots/1b.png)
 
 ---
 
@@ -408,7 +419,11 @@ The test program verifies:
 
 **📸 Screenshot 2A:** Output of `./test_tree` showing all tests passing.
 
+![Screenshot 2A](screenshots/2a.png)
+
 **📸 Screenshot 2B:** Pick a tree object from `find .pes/objects -type f` and run `xxd .pes/objects/XX/YYY... | head -20` to show the raw binary format.
+
+![Screenshot 2B](screenshots/2b.png)
 
 ---
 
@@ -466,7 +481,11 @@ cat .pes/index    # Human-readable text format
 
 **📸 Screenshot 3A:** Run `./pes init`, `./pes add file1.txt file2.txt`, `./pes status` — show the output.
 
+![Screenshot 3A](screenshots/3a.png)
+
 **📸 Screenshot 3B:** `cat .pes/index` showing the text-format index with your entries.
+
+![Screenshot 3B](screenshots/3b.png)
 
 ---
 
@@ -517,9 +536,21 @@ make test-integration
 
 **📸 Screenshot 4A:** Output of `./pes log` showing three commits with hashes, authors, timestamps, and messages.
 
+![Screenshot 4A](screenshots/4a.png)
+
 **📸 Screenshot 4B:** `find .pes -type f | sort` showing object store growth after three commits.
 
+![Screenshot 4B](screenshots/4b.png)
+
 **📸 Screenshot 4C:** `cat .pes/refs/heads/main` and `cat .pes/HEAD` showing the reference chain.
+
+![Screenshot 4C](screenshots/4c.png)
+
+**📸 Full Integration Test:** `make test-integration` output.
+
+![Integration Test 1](screenshots/make_full_integretion.png)
+
+![Integration Test 2](screenshots/make_full_integration_continued.png)
 
 ---
 
