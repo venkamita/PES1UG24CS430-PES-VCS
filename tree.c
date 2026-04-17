@@ -33,6 +33,25 @@ uint32_t get_file_mode(const char *path) {
     if (st.st_mode & S_IXUSR) return MODE_EXEC;
     return MODE_FILE;
 }
+// Add a recursive helper above tree_from_index
+static int write_tree_recursive(IndexEntry *entries, int count, const char *prefix, ObjectID *id_out) {
+    Tree tree;
+    tree.count = 0;
+
+    int prefix_len = prefix ? strlen(prefix) : 0;
+
+    // (grouping logic in next commit)
+    (void)entries; (void)count; (void)id_out;
+    return -1;
+}
+
+int tree_from_index(ObjectID *id_out) {
+    Index index;
+    if (index_load(&index) != 0) return -1;
+    if (index.count == 0) return -1;
+
+    return write_tree_recursive(index.entries, index.count, NULL, id_out);
+}
 
 // Parse binary tree data into a Tree struct safely.
 // Returns 0 on success, -1 on parse error.
