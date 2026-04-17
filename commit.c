@@ -203,7 +203,17 @@ int commit_create(const char *message, ObjectID *commit_id_out) {
         return -1;
     }
 
-    // (parent, author, message in next commits)
+        // Step 2: Read parent commit (HEAD)
+    if (head_read(&c.parent) == 0) {
+        c.has_parent = 1;
+    } else {
+        c.has_parent = 0;  // First commit — no parent
+    }
+
+    // Step 3: Set author and timestamp
+    snprintf(c.author, sizeof(c.author), "%s", pes_author());
+    c.timestamp = (uint64_t)time(NULL);
+
     (void)message; (void)commit_id_out;
     return -1;
 }
