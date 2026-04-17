@@ -92,9 +92,18 @@ static int write_tree_recursive(IndexEntry *entries, int count, const char *pref
 
     }
 
-    // Serialize and write (placeholder)
-    return -1;
+        // Serialize tree to binary format
+    void *tree_data = NULL;
+    size_t tree_len = 0;
+    if (tree_serialize(&tree, &tree_data, &tree_len) != 0) return -1;
+
+    // Write tree object to store
+    int rc = object_write(OBJ_TREE, tree_data, tree_len, id_out);
+    free(tree_data);
+    return rc;
 }
+
+   
 
 int tree_from_index(ObjectID *id_out) {
     Index index;
