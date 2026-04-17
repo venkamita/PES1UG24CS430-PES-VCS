@@ -234,8 +234,32 @@ int index_add(Index *index, const char *path) {
         return -1;
     }
     free(contents);
+        // Step 3: Get file metadata
+    struct stat st;
+    if (stat(path, &st) != 0) return -1;
 
-    // (update index entry in next commit)
-    return -1;
+    // Step 4: Update or create index entry
+    IndexEntry *existing = index_find(index, path);
+    if (existing) {
+        // Update existing entry
+        existing->hash = blob_id;
+        existing->mode = (st.st_mode & S_IXUSR) ? 0100755 : 0100644;
+        existing->mtime_sec = st.st_mtime;
+        existing->size = st.st_size;
+    } else {
+        // Add new entry
+        if (index->count >= MAX_INDEX_ENTRIES) return -1;
+        IndexEntry *e = &index->entries[index->count++];
+        e->hash = blob_id;
+        e->mode = (st.st_mode & S_IXUSR) ? 0100755 : 0100644;
+        e->mtime_sec = st.st_mtime;
+        e->size = st.st_size;
+        strncpy(e->path, path, sizeof(e->path) - 1);
+        e->path[sizeof(e->path) - 1] = '\0';
+    }
+
+    // Step 5: Save updated index
+    return index_save(index);
+
 }
 
