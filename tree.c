@@ -33,15 +33,31 @@ uint32_t get_file_mode(const char *path) {
     if (st.st_mode & S_IXUSR) return MODE_EXEC;
     return MODE_FILE;
 }
-// Add a recursive helper above tree_from_index
 static int write_tree_recursive(IndexEntry *entries, int count, const char *prefix, ObjectID *id_out) {
     Tree tree;
     tree.count = 0;
-
     int prefix_len = prefix ? strlen(prefix) : 0;
 
-    // (grouping logic in next commit)
-    (void)entries; (void)count; (void)id_out;
+    int i = 0;
+    while (i < count) {
+        const char *rel_path = entries[i].path + prefix_len;
+        char *slash = strchr(rel_path, '/');
+
+        if (!slash) {
+            // This is a file at this level
+            TreeEntry *te = &tree.entries[tree.count++];
+            te->mode = entries[i].mode;
+            te->hash = entries[i].hash;
+            strncpy(te->name, rel_path, sizeof(te->name) - 1);
+            te->name[sizeof(te->name) - 1] = '\0';
+            i++;
+        } else {
+            // Subdirectory — handled in next commit
+            i++;
+        }
+    }
+
+    // Serialize and write (placeholder)
     return -1;
 }
 
