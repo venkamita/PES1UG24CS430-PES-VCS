@@ -225,7 +225,15 @@ int object_read(const ObjectID *id, ObjectType *type_out, void **data_out, size_
     else if (strncmp((char *)buf, "commit ", 7) == 0) *type_out = OBJ_COMMIT;
     else { free(buf); return -1; }
 
-    
+        // Step 5: Verify integrity - recompute hash and compare
+    ObjectID computed;
+    compute_hash(buf, file_size, &computed);
+    if (memcmp(computed.hash, id->hash, HASH_SIZE) != 0) {
+        fprintf(stderr, "error: object integrity check failed\n");
+        free(buf);
+        return -1;
+    }
+
     free(buf);
     return -1;
 }
