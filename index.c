@@ -57,6 +57,38 @@ int index_remove(Index *index, const char *path) {
 // Identifies files that are staged, unstaged (modified/deleted in working dir),
 // and untracked (present in working dir but not in index).
 // Returns 0.
+static int compare_index_entries(const void *a, const void *b) {
+    return strcmp(((const IndexEntry *)a)->path, ((const IndexEntry *)b)->path);
+}
+
+int index_save(const Index *index) {
+    // Sort entries by path (create a mutable copy)
+    Index sorted = *index;
+    qsort(sorted.entries, sorted.count, sizeof(IndexEntry), compare_index_entries);
+
+    // Write to temp file
+    char tmp_path[] = ".pes/index.tmp";
+    FILE *f = fopen(tmp_path, "w");
+    if (!f) return -1;
+
+    for (int i = 0; i < sorted.count; i++) {
+        char hex[HASH_HEX_SIZE + 1];
+        hash_to_hex(&sorted.entries[i].hash, hex);
+        fprintf(f, "%o %s %lu %u %s\n",
+                sorted.entries[i].mode, hex,
+                sorted.entries[i].mtime_sec,
+                sorted.entries[i].size,
+                sorted.entries[i].path);
+    }
+
+    fflush(f);
+    fsync(fileno(f));
+    fclose(f);
+
+    return rename(tmp_path, INDEX_FILE);
+}
+
+
 int index_status(const Index *index) {
     printf("Staged changes:\n");
     int staged_count = 0;
