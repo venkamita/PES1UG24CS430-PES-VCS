@@ -18,7 +18,8 @@ pes: $(OBJS)
 test_objects: test_objects.o object.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-test_tree: test_tree.o object.o tree.o
+# NOTE: index.o added here so the linker can find `index_load`
+test_tree: test_tree.o object.o tree.o index.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 # ─── Convenience targets ────────────────────────────────────────────────────
@@ -43,3 +44,4 @@ test-unit: test_objects test_tree
 test-integration: pes
 	@echo "=== Running integration tests ==="
 	bash test_sequence.sh
+
