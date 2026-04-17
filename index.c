@@ -200,12 +200,6 @@ int index_load(Index *index) {
 //   - rename                           : atomically moving the temp file over the old index
 //
 // Returns 0 on success, -1 on error.
-int index_save(const Index *index) {
-    // TODO: Implement atomic index saving
-    // (See Lab Appendix for logical steps)
-    (void)index;
-    return -1;
-}
 
 // Stage a file for the next commit.
 //
@@ -217,8 +211,31 @@ int index_save(const Index *index) {
 //
 // Returns 0 on success, -1 on error.
 int index_add(Index *index, const char *path) {
-    // TODO: Implement file staging
-    // (See Lab Appendix for logical steps)
-    (void)index; (void)path;
+    // Step 1: Read the file
+    FILE *f = fopen(path, "rb");
+    if (!f) {
+        fprintf(stderr, "error: cannot open '%s'\n", path);
+        return -1;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long file_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    void *contents = malloc(file_size);
+    if (!contents) { fclose(f); return -1; }
+    fread(contents, 1, file_size, f);
+    fclose(f);
+
+    // Step 2: Write blob to object store
+    ObjectID blob_id;
+    if (object_write(OBJ_BLOB, contents, file_size, &blob_id) != 0) {
+        free(contents);
+        return -1;
+    }
+    free(contents);
+
+    // (update index entry in next commit)
     return -1;
 }
+
